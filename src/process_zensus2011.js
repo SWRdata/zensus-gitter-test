@@ -9,7 +9,7 @@ import { TextDecoder } from 'node:util';
 process.chdir(new URL('../', import.meta.url).pathname);
 
 let files = getFiles('data/zensus2011');
-files = ['data/zensus2011/zensus2011_familie_100m.csv.br'];
+files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
 const fileSum = getFileSum(files);
 let filePos = 0;
 

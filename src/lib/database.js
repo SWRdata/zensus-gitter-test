@@ -25,11 +25,11 @@ export function Database() {
 			index = coordsLookup.get(key)
 		}
 
-		const prop = propKey.trim() + ': ' + propVal.trim();
+		const prop = propKey.replaceAll('"', '').trim() + ': ' + propVal.replaceAll('"', '').trim();
 		let buffer;
 		if (!data.has(prop)) {
-			buffer = new Int16Array(3200000);
-			buffer.fill(-1);
+			buffer = new Uint16Array(3200000);
+			buffer.fill(0);
 			data.set(prop, buffer);
 		} else {
 			buffer = data.get(prop);
@@ -47,7 +47,8 @@ export function Database() {
 
 		for (let i = 0; i < n; i++) {
 			if (i % 10000 === 0) process.stderr.write(`\r${(100 * i / n).toFixed(1)}%`);
-			const [x, y] = coords[i];
+			const x = coords[i][0] * 100;
+			const y = coords[i][1] * 100;
 			const feature = {
 				type: 'Feature',
 				geometry: {

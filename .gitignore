@@ -1,5 +1,7 @@
 
 *.geojsonl
+*.gz
 *.mbtiles
+*.versatiles
 data
 node_modules
