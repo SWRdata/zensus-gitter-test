@@ -1,3 +1,5 @@
 
+*.geojsonl
+*.mbtiles
 data
 node_modules
