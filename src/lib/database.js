@@ -119,7 +119,7 @@ export class Database {
 				indexes0 => indexes0.reduce((s, i0) => s + array0[i0]) / 4
 			);
 
-			this.data.set(key, array);
+			data.set(key, array);
 		}
 
 		return new Database(this.scale * 2, { pointLookup, points, data });
