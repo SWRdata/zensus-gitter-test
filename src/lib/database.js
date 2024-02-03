@@ -9,25 +9,31 @@ const projection = proj4('EPSG:3035', 'EPSG:4326').forward;
 const project = p => projection(p).map(v => Math.round(v * 1e6) / 1e6);
 
 export class Database {
-	coordsLookup = new Map();
-	coords = [];
+	pointLookup = new Map();
+	points = [];
 	data = new Map();
 	scale;
 
-	constructor(scale) {
+	constructor(scale, parent) {
 		this.scale = scale;
+		if (parent) {
+			this.pointLookup = parent.pointLookup;
+			this.points = parent.points;
+			this.data = parent.data;
+		}
 	}
 
 	addRow(cell, prop, value) {
 		const { x, y } = cell.match(/^100mN(?<y>\d{5})E(?<x>\d{5})$/).groups;
-		const key = x + '_' + y;
+		const point = [parseInt(x, 10), parseInt(y, 10)];
+		const key = point.join(',');
 		let index;
-		if (!this.coordsLookup.has(key)) {
-			index = this.coordsLookup.size;
-			this.coordsLookup.set(key, index);
-			this.coords[index] = [parseInt(x, 10), parseInt(y, 10)];
+		if (!this.pointLookup.has(key)) {
+			index = this.pointLookup.size;
+			this.pointLookup.set(key, index);
+			this.points[index] = point;
 		} else {
-			index = this.coordsLookup.get(key)
+			index = this.pointLookup.get(key)
 		}
 
 		let buffer;
@@ -42,13 +48,11 @@ export class Database {
 		buffer[index] = value;
 	}
 
-	size() {
-		return this.coordsLookup.size;
-	}
-
 	save(filename) {
+		console.log(`Saving ${filename} with ${this.pointLookup.size} features ...`);
+
 		const keys = Array.from(this.data.keys());
-		const n = this.coordsLookup.size;
+		const n = this.pointLookup.size;
 		let buffers = [];
 		const fd = openSync(filename, 'w');
 		const scale = this.scale;
@@ -57,8 +61,8 @@ export class Database {
 		for (let i = 0; i < n; i++) {
 			progressBar.increment()
 
-			const x = this.coords[i][0] * scale;
-			const y = this.coords[i][1] * scale;
+			const x = this.points[i][0] * scale;
+			const y = this.points[i][1] * scale;
 			const feature = {
 				type: 'Feature',
 				geometry: {
@@ -71,7 +75,7 @@ export class Database {
 						[x, y],
 					].map(project)]
 				},
-				properties: Object.fromEntries(keys.map(key => [key, this.data.get(key)[i]])),
+				properties: Object.fromEntries(keys.map(key => [key, Math.round(this.data.get(key)[i] * 10) / 10])),
 			}
 			buffers.push(Buffer.from(JSON.stringify(feature) + '\n'));
 			if (buffers.length > 10000) flush();
@@ -84,5 +88,40 @@ export class Database {
 			writeSync(fd, Buffer.concat(buffers));
 			buffers = [];
 		}
+	}
+
+	getScaled() {
+		console.log(`Scaling to ${this.scale * 2} ...`);
+
+		const pointLookup = new Map();
+		const points = [];
+		const data = new Map();
+		const matrix = [];
+
+		this.points.forEach((point0, index0) => {
+			const point = [point0[0] >>> 1, point0[1] >>> 1];
+			const key = point.join(',');
+
+			if (!pointLookup.has(key)) {
+				const index = pointLookup.size;
+				pointLookup.set(key, index);
+				points[index] = point;
+				matrix[index] = [index0];
+			} else {
+				const index = pointLookup.get(key);
+				matrix[index].push(index0)
+			}
+		})
+
+		for (let [key, array0] of Object.entries(this.data)) {
+			const array = Float64Array.from(
+				matrix,
+				indexes0 => indexes0.reduce((s, i0) => s + array0[i0]) / 4
+			);
+
+			this.data.set(key, array);
+		}
+
+		return new Database(this.scale * 2, { pointLookup, points, data });
 	}
 }

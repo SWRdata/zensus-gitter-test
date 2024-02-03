@@ -10,10 +10,10 @@ import { createProgressBar } from 'work-faster';
 process.chdir(new URL('../', import.meta.url).pathname);
 
 let files = getFiles('data/zensus2011');
-//files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
-files = ['data/zensus2011/extract.csv.br'];
+files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
+//files = ['data/zensus2011/extract.csv.br'];
 
-const data = new Database(100);
+let data = new Database(100);
 const progressBar = createProgressBar(getFileSum(files));
 
 for (const file of files) {
@@ -60,7 +60,12 @@ for (const file of files) {
 }
 progressBar.close();
 
-console.log(`Saving ${data.size()} features ...`);
-data.save('zensus2011.geojsonl');
+const maxLevel = 5;
+for (let level = 0; level <= maxLevel; level++) {
+	data.save(`zensus2011_level${level}.geojsonl`);
+	if (level < maxLevel) {
+		data = data.getScaled();
+	}
+}
 
 console.log('Finished');
