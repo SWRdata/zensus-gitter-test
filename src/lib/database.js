@@ -5,7 +5,8 @@ import { createProgressBar } from 'work-faster';
 
 proj4.defs('EPSG:3035', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
 proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
-const project = proj4('EPSG:3035', 'EPSG:4326').forward;
+const projection = proj4('EPSG:3035', 'EPSG:4326').forward;
+const project = p => projection(p).map(v => Math.round(v * 1e6) / 1e6);
 
 export class Database {
 	coordsLookup = new Map();
@@ -31,7 +32,7 @@ export class Database {
 			index = this.coordsLookup.get(key)
 		}
 
-		const prop = propKey.replaceAll('"', '').trim() + ': ' + propVal.replaceAll('"', '').trim();
+		const prop = propKey.replaceAll('"', '').trim() + ':' + propVal.replaceAll('"', '').trim();
 		let buffer;
 		if (!this.data.has(prop)) {
 			buffer = new Uint16Array(3200000);
@@ -70,7 +71,7 @@ export class Database {
 						[x + 100, y + 100],
 						[x + 100, y],
 						[x, y],
-					].map(p => project(p))]
+					].map(project)]
 				},
 				properties: Object.fromEntries(keys.map(key => [key, this.data.get(key)[i]])),
 			}
