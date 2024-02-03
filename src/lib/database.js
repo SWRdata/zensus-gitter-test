@@ -1,14 +1,20 @@
 
-import { chownSync, closeSync, openSync, writeSync } from 'node:fs';
+import proj4 from 'proj4';
+import { closeSync, openSync, writeSync } from 'node:fs';
+import { createProgressBar } from 'work-faster';
 
-export function Database() {
-	const coordsLookup = new Map();
-	const coords = [];
-	const data = new Map();
+proj4.defs('EPSG:3035', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
+const project = proj4('EPSG:3035', 'EPSG:4326').forward;
 
-	return { addRow, save };
+export class Database {
+	coordsLookup = new Map();
+	coords = [];
+	data = new Map();
 
-	function addRow(cell, propKey, propVal, value, quality) {
+	constructor() { }
+
+	addRow(cell, propKey, propVal, value, quality) {
 		if (!/^\d+$/.test(value)) {
 			console.log({ cell, coord, propKey, propVal, value, quality })
 			throw Error();
@@ -17,38 +23,43 @@ export function Database() {
 		const { x, y } = cell.match(/^100mN(?<y>\d{5})E(?<x>\d{5})$/).groups;
 		const key = x + '_' + y;
 		let index;
-		if (!coordsLookup.has(key)) {
-			index = coordsLookup.size;
-			coordsLookup.set(key, index);
-			coords[index] = [parseInt(x, 10), parseInt(y, 10)];
+		if (!this.coordsLookup.has(key)) {
+			index = this.coordsLookup.size;
+			this.coordsLookup.set(key, index);
+			this.coords[index] = [parseInt(x, 10), parseInt(y, 10)];
 		} else {
-			index = coordsLookup.get(key)
+			index = this.coordsLookup.get(key)
 		}
 
 		const prop = propKey.replaceAll('"', '').trim() + ': ' + propVal.replaceAll('"', '').trim();
 		let buffer;
-		if (!data.has(prop)) {
+		if (!this.data.has(prop)) {
 			buffer = new Uint16Array(3200000);
 			buffer.fill(0);
-			data.set(prop, buffer);
+			this.data.set(prop, buffer);
 		} else {
-			buffer = data.get(prop);
+			buffer = this.data.get(prop);
 		}
 
 		buffer[index] = parseInt(value, 10)
 	}
 
-	function save(filename) {
-		const keys = Array.from(data.keys());
-		const n = coordsLookup.size;
-		console.log({ n })
+	size() {
+		return this.coordsLookup.size;
+	}
+
+	save(filename) {
+		const keys = Array.from(this.data.keys());
+		const n = this.coordsLookup.size;
 		let buffers = [];
 		const fd = openSync(filename, 'w');
 
+		const progressBar = createProgressBar(n);
 		for (let i = 0; i < n; i++) {
-			if (i % 10000 === 0) process.stderr.write(`\r${(100 * i / n).toFixed(1)}%`);
-			const x = coords[i][0] * 100;
-			const y = coords[i][1] * 100;
+			progressBar.increment()
+
+			const x = this.coords[i][0] * 100;
+			const y = this.coords[i][1] * 100;
 			const feature = {
 				type: 'Feature',
 				geometry: {
@@ -59,15 +70,16 @@ export function Database() {
 						[x + 100, y + 100],
 						[x + 100, y],
 						[x, y],
-					]]
+					].map(p => project(p))]
 				},
-				properties: Object.fromEntries(keys.map(key => [key, data.get(key)[i]])),
+				properties: Object.fromEntries(keys.map(key => [key, this.data.get(key)[i]])),
 			}
 			buffers.push(Buffer.from(JSON.stringify(feature) + '\n'));
 			if (buffers.length > 10000) flush();
 		}
 		flush();
 		closeSync(fd);
+		progressBar.close();
 
 		function flush() {
 			writeSync(fd, Buffer.concat(buffers));

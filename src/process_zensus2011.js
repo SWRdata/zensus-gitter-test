@@ -5,26 +5,25 @@ import * as miss from 'mississippi2';
 import { getFileSum, getFiles } from './lib/file.js';
 import { Database } from './lib/database.js';
 import { TextDecoder } from 'node:util';
+import { createProgressBar } from 'work-faster';
 
 process.chdir(new URL('../', import.meta.url).pathname);
 
 let files = getFiles('data/zensus2011');
-files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
-const fileSum = getFileSum(files);
-let filePos = 0;
+//files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
+files = ['data/zensus2011/extract.csv.br'];
 
 const data = new Database();
+const progressBar = createProgressBar(getFileSum(files));
+
 for (const file of files) {
 	let header, separator;
 	const decoder = new TextDecoder('iso8859-2');
-	console.log(file);
+	
 	await new Promise(res => miss.each(
 		miss.pipeline(
 			createReadStream(file),
-			miss.spy(chunk => {
-				filePos += chunk.length;
-				process.stderr.write(`\r${(100 * filePos / fileSum).toFixed(1)}%`);
-			}),
+			miss.spy(chunk => progressBar.increment(chunk.length)),
 			createBrotliDecompress(),
 			miss.through((chunk, enc, cb) => cb(null, decoder.decode(chunk, { stream: true }))),
 			miss.split(/\r?\n/)
@@ -51,8 +50,9 @@ for (const file of files) {
 		res
 	))
 }
+progressBar.close();
 
-console.log('\nSaving...');
+console.log(`Saving ${data.size()} features ...`);
 data.save('zensus2011.geojsonl');
 
-console.log('\nFinished');
+console.log('Finished');
