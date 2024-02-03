@@ -15,12 +15,7 @@ export class Database {
 
 	constructor() { }
 
-	addRow(cell, propKey, propVal, value, quality) {
-		if (!/^\d+$/.test(value)) {
-			console.log({ cell, coord, propKey, propVal, value, quality })
-			throw Error();
-		}
-
+	addRow(cell, prop, value) {
 		const { x, y } = cell.match(/^100mN(?<y>\d{5})E(?<x>\d{5})$/).groups;
 		const key = x + '_' + y;
 		let index;
@@ -32,7 +27,6 @@ export class Database {
 			index = this.coordsLookup.get(key)
 		}
 
-		const prop = propKey.replaceAll('"', '').trim() + ':' + propVal.replaceAll('"', '').trim();
 		let buffer;
 		if (!this.data.has(prop)) {
 			buffer = new Uint16Array(3200000);
@@ -42,7 +36,7 @@ export class Database {
 			buffer = this.data.get(prop);
 		}
 
-		buffer[index] = parseInt(value, 10)
+		buffer[index] = value;
 	}
 
 	size() {

@@ -17,9 +17,9 @@ const data = new Database();
 const progressBar = createProgressBar(getFileSum(files));
 
 for (const file of files) {
-	let header, separator;
+	let fields, separator;
 	const decoder = new TextDecoder('iso8859-2');
-	
+
 	await new Promise(res => miss.each(
 		miss.pipeline(
 			createReadStream(file),
@@ -30,20 +30,28 @@ for (const file of files) {
 		),
 		(line, next) => {
 			line = line.toString();
-			if (!header) {
+			if (!fields) {
 				separator = line.includes(';') ? ';' : ',';
 				line = line.split(separator);
 				line = Object.fromEntries(line.map((k, i) => [k, i]));
 
-				header = [line.Gitter_ID_100m, line.Merkmal, line.Auspraegung_Text, line.Anzahl, line.Anzahl_q];
-				if (header.some(field => field == null)) {
+				fields = {
+					cell: line.Gitter_ID_100m,
+					propKey: line.Merkmal,
+					propVal: line.Auspraegung_Text,
+					value: line.Anzahl,
+				};
+				if (Object.values(fields).some(field => field == null)) {
 					console.log(line);
 					throw Error();
 				}
 			} else {
 				line = line.split(separator);
-				line = header.map(i => line[i]);
-				data.addRow(...line);
+				data.addRow(
+					line[fields.cell],
+					[line[fields.propKey], line[fields.propVal]].map(v => v.replace(/[":\n\r\t ]+/g, '')).join(':'),
+					parseInt(line[fields.value], 10),
+				);
 			}
 			next()
 		},
