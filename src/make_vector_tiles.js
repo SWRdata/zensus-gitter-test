@@ -1,6 +1,6 @@
 import { run } from './lib/run.js';
 
-const filenameTemplate = 'zensus2011_level%.geojsonl';
+const filenameTemplate = 'temp/zensus2011_level%.geojsonl';
 const levelMapping = [
 	[9, 14],
 	[8],
@@ -45,7 +45,7 @@ async function makeTiles() {
 			'--layer=' + layerName,
 			...fields.map(field => `--include="${field}"`),
 			'--force',
-			`--output=temp${index}.mbtiles`,
+			`--output=temp/zensus${index}.mbtiles`,
 			filename,
 		];
 		await run('tippecanoe', args);
@@ -58,8 +58,8 @@ async function joinTiles() {
 		'--name=' + layerName,
 		'--no-tile-size-limit',
 		'--force',
-		'--output=zensus.mbtiles',
-		...levelMapping.map((level, index) => `temp${index}.mbtiles`),
+		'--output=temp/zensus.mbtiles',
+		...levelMapping.map((level, index) => `temp/temp${index}.mbtiles`),
 	];
 	await run('tile-join', args);
 }
@@ -68,8 +68,8 @@ async function makeVersaTiles() {
 	const args = [
 		'convert',
 		'--compress=brotli',
-		'zensus.mbtiles',
-		'zensus.versatiles'
+		'temp/zensus.mbtiles',
+		'temp/zensus.versatiles'
 	];
 	await run('versatiles', args);
 }

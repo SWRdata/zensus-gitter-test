@@ -62,7 +62,7 @@ progressBar.close();
 
 const maxLevel = 5;
 for (let level = 0; level <= maxLevel; level++) {
-	data.save(`zensus2011_level${level}.geojsonl`);
+	data.save(`temp/zensus2011_level${level}.geojsonl`);
 	if (level < maxLevel) {
 		data = data.getScaled();
 	}
