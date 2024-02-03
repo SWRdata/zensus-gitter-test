@@ -113,7 +113,7 @@ export class Database {
 			}
 		})
 
-		for (let [key, array0] of Object.entries(this.data)) {
+		for (let [key, array0] of this.data.entries()) {
 			const array = Float64Array.from(
 				matrix,
 				indexes0 => indexes0.reduce((s, i0) => s + array0[i0]) / 4
