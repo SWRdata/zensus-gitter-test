@@ -12,8 +12,11 @@ export class Database {
 	coordsLookup = new Map();
 	coords = [];
 	data = new Map();
+	scale;
 
-	constructor() { }
+	constructor(scale) {
+		this.scale = scale;
+	}
 
 	addRow(cell, prop, value) {
 		const { x, y } = cell.match(/^100mN(?<y>\d{5})E(?<x>\d{5})$/).groups;
@@ -48,22 +51,23 @@ export class Database {
 		const n = this.coordsLookup.size;
 		let buffers = [];
 		const fd = openSync(filename, 'w');
+		const scale = this.scale;
 
 		const progressBar = createProgressBar(n);
 		for (let i = 0; i < n; i++) {
 			progressBar.increment()
 
-			const x = this.coords[i][0] * 100;
-			const y = this.coords[i][1] * 100;
+			const x = this.coords[i][0] * scale;
+			const y = this.coords[i][1] * scale;
 			const feature = {
 				type: 'Feature',
 				geometry: {
 					type: 'Polygon',
 					coordinates: [[
 						[x, y],
-						[x, y + 100],
-						[x + 100, y + 100],
-						[x + 100, y],
+						[x, y + scale],
+						[x + scale, y + scale],
+						[x + scale, y],
 						[x, y],
 					].map(project)]
 				},

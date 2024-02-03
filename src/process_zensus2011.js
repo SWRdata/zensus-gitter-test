@@ -13,7 +13,7 @@ let files = getFiles('data/zensus2011');
 //files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
 files = ['data/zensus2011/extract.csv.br'];
 
-const data = new Database();
+const data = new Database(100);
 const progressBar = createProgressBar(getFileSum(files));
 
 for (const file of files) {
