@@ -2,7 +2,7 @@
 *.geojsonl
 *.gz
 *.mbtiles
+*.mbtiles-journal
 *.versatiles
 data
 node_modules
-temp
