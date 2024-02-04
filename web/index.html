@@ -24,25 +24,42 @@
 	<script>
 		(async () => {
 			const style = await (await fetch('tiles/style.json')).json();
-			console.log('A', style);
 
 			const { fields } = style.sources.vectorSource.vector_layers[0];
-			style.layers = style.layers.filter(layer => /^(background|fill)$/.test(layer.type));
-			const layer = style.layers[1];
-			const key = 'INSGESAMT: Einheiten insgesamt';
-			const exponent = Math.log(0.5) / Math.log(100);
+			const key0 = 'INSGESAMT: Einheiten insgesamt';
+			const key1 = 'STAATSANGE_HLND: Türkei';
 
-			layer.paint = {
-				'fill-color': [
-					//'rgba', 0, 159, 227,
-					'rgba', 0, 0, 0,
-					['-', 1, ['^', ['+', ['get', key], 1], exponent]],
-				],
-				'fill-antialias': true,
-				'fill-outline-color': 'transparent',
+			console.log(style.layers);
+
+			style.layers = [
+				{
+					id: 'background',
+					type: 'background',
+					paint: {
+						'background-color': '#fff'
+					}
+				},
+				getColorLayer('vis0', [0, 159, 227], key0),
+				getColorLayer('vis1', [227, 6, 19], key1, 3),
+			];
+
+			function getColorLayer(id, color, key, scale = 1) {
+				return {
+					id,
+					'source-layer': 'zensus',
+					source: 'vectorSource',
+					type: 'fill',
+					filter: ['==', '$type', 'Polygon'],
+					paint: {
+						'fill-color': [
+							'rgba', ...color,
+							['-', 1, ['^', ['+', 1, ['*', 0.1 * scale, ['get', key]]], -0.5]]
+						],
+						'fill-antialias': true,
+						'fill-outline-color': 'transparent'
+					}
+				}
 			}
-
-			console.log(style);
 
 			const mapOptions = {
 				container: 'map',
