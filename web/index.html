@@ -28,6 +28,10 @@
 			const { fields } = style.sources.vectorSource.vector_layers[0];
 			const key0 = 'INSGESAMT: Einheiten insgesamt';
 			const key1 = 'STAATSANGE_HLND: Türkei';
+			const color0 = [0, 159, 227];
+			const color1 = [227, 6, 19];
+			const scale0 = 1;
+			const scale1 = 10;
 
 			console.log(style.layers);
 
@@ -39,27 +43,24 @@
 						'background-color': '#fff'
 					}
 				},
-				getColorLayer('vis0', [0, 159, 227], key0),
-				getColorLayer('vis1', [227, 6, 19], key1, 3),
-			];
-
-			function getColorLayer(id, color, key, scale = 1) {
-				return {
-					id,
+				{
+					id: 'visualisation',
 					'source-layer': 'zensus',
 					source: 'vectorSource',
 					type: 'fill',
 					filter: ['==', '$type', 'Polygon'],
 					paint: {
 						'fill-color': [
-							'rgba', ...color,
-							['-', 1, ['^', ['+', 1, ['*', 0.1 * scale, ['get', key]]], -0.5]]
+							'let',
+							'v0', ['-', 1, ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5]],
+							'v1', ['-', 1, ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5]],
+							['rgba', ...color0, ['var', 'v0']]
 						],
 						'fill-antialias': true,
 						'fill-outline-color': 'transparent'
 					}
 				}
-			}
+			]
 
 			const mapOptions = {
 				container: 'map',
