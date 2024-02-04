@@ -32,9 +32,13 @@
 			//const color0 = [255, 255, 255];
 			const color1 = [227, 6, 19];
 			//const color1 = [229, 0, 109];
-			const colors = color0.map((c0, i) => [c0*0.999, color1[i]*0.999]);
+			const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
 			const scale0 = 1;
-			const scale1 = 10;
+			const scale1 = 3;
+
+			// 1: multiply colors (subtractive color mixing)
+			// 0: overlay colors (paint color opaquely over the other color)
+			const multiply = 0.3;
 
 			console.log(style.layers);
 			console.log(colors);
@@ -69,10 +73,10 @@
 											0, 255,
 											['/',
 												['+',
-													['*', ['var', 'v0'], c1 - c0 * c1 / 255],
-													['*', ['var', 'v1'], c0 - c0 * c1 / 255],
-													['*', ['var', 'v0'], ['var', 'v1'], c0 * c1 / 255 - c0 - c1],
-													c0 * c1 / 255
+													['*', ['var', 'v0'], multiply * (c1 - c0 * c1 / 255)],
+													['*', ['var', 'v1'], multiply * (c0 - c0 * c1 / 255) + (1 - multiply) * (c0 - c1)],
+													['*', ['var', 'v0'], ['var', 'v1'], multiply * (c0 * c1 / 255 - c0 - c1) + (1 - multiply) * (- c0)],
+													multiply * (c0 * c1 / 255) + (1 - multiply) * c1
 												],
 												['var', 'a']
 											]
