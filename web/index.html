@@ -29,11 +29,15 @@
 			const key0 = 'INSGESAMT: Einheiten insgesamt';
 			const key1 = 'STAATSANGE_HLND: Türkei';
 			const color0 = [0, 159, 227];
+			//const color0 = [255, 255, 255];
 			const color1 = [227, 6, 19];
+			//const color1 = [229, 0, 109];
+			const colors = color0.map((c0, i) => [c0*0.999, color1[i]*0.999]);
 			const scale0 = 1;
 			const scale1 = 10;
 
 			console.log(style.layers);
+			console.log(colors);
 
 			style.layers = [
 				{
@@ -52,15 +56,38 @@
 					paint: {
 						'fill-color': [
 							'let',
-							'v0', ['-', 1, ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5]],
-							'v1', ['-', 1, ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5]],
-							['rgba', ...color0, ['var', 'v0']]
+							'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5],
+							'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5],
+							[
+								'let',
+								'a', ['-', 1, ['*', ['var', 'v0'], ['var', 'v1']]],
+								[
+									'rgba',
+									...colors.map(([c0, c1]) =>
+										['match',
+											['var', 'a'],
+											0, 255,
+											['/',
+												['+',
+													['*', ['var', 'v0'], c1 - c0 * c1 / 255],
+													['*', ['var', 'v1'], c0 - c0 * c1 / 255],
+													['*', ['var', 'v0'], ['var', 'v1'], c0 * c1 / 255 - c0 - c1],
+													c0 * c1 / 255
+												],
+												['var', 'a']
+											]
+										]
+									),
+									['var', 'a']
+								]
+							]
 						],
 						'fill-antialias': true,
 						'fill-outline-color': 'transparent'
 					}
 				}
 			]
+
 
 			const mapOptions = {
 				container: 'map',
