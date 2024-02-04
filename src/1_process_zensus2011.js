@@ -6,12 +6,15 @@ import { getFileSum, getFiles } from './lib/file.js';
 import { Database } from './lib/database.js';
 import { TextDecoder } from 'node:util';
 import { createProgressBar } from 'work-faster';
+import chalk from 'chalk';
 
 process.chdir(new URL('../', import.meta.url).pathname);
 
 let files = getFiles('data/zensus2011');
 files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
 //files = ['data/zensus2011/extract.csv.br'];
+
+console.log(chalk.red.bold(`Reading ${files.length} files`));
 
 let data = new Database(100);
 const progressBar = createProgressBar(getFileSum(files));
@@ -74,4 +77,4 @@ for (let level = 0; level <= maxLevel; level++) {
 	}
 }
 
-console.log('Finished');
+console.log(chalk.red.bold('Finished'));

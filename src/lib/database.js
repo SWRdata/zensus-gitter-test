@@ -2,6 +2,7 @@
 import proj4 from 'proj4';
 import { closeSync, openSync, writeSync } from 'node:fs';
 import { createProgressBar } from 'work-faster';
+import chalk from 'chalk';
 
 proj4.defs('EPSG:3035', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
 proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
@@ -49,7 +50,7 @@ export class Database {
 	}
 
 	save(filename) {
-		console.log(`Saving ${filename} with ${this.pointLookup.size} features ...`);
+		console.log(chalk.red.bold(`Saving ${filename} with ${this.pointLookup.size} features`));
 
 		const keys = Array.from(this.data.keys());
 		const n = this.pointLookup.size;
@@ -91,7 +92,7 @@ export class Database {
 	}
 
 	getScaled() {
-		console.log(`Scaling to ${this.scale * 2} ...`);
+		console.log(chalk.red.bold(`Scaling to ${this.scale * 2}`));
 
 		const pointLookup = new Map();
 		const points = [];

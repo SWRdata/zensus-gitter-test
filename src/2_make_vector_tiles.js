@@ -1,5 +1,8 @@
 import { run } from './lib/run.js';
 import { readFileSync } from 'node:fs';
+import chalk from 'chalk';
+
+
 
 const filenameTemplate = 'temp/zensus2011_level%.geojsonl';
 const levelMapping = [
@@ -29,13 +32,17 @@ const fields = [
 	'ALTER_KURZ: 65 und älter',
 ];
 
+
+
 checkFields();
 await makeTiles();
 await joinTiles();
 await makeVersaTiles();
 
+
+
 function checkFields() {
-	console.log('CHECK FIELDS');
+	console.log(chalk.red.bold('check fields'));
 	const filename = filenameTemplate.replace('%', levelMapping.length - 1);
 	const keys = new Set();
 	readFileSync(filename, 'utf8').split('\n').forEach(line => {
@@ -55,7 +62,7 @@ function checkFields() {
 }
 
 async function makeTiles() {
-	console.log('MAKE TILES');
+	console.log(chalk.red.bold('generate tiles'));
 	for (const [index, levels] of levelMapping.entries()) {
 		const filename = filenameTemplate.replace('%', index);
 		const args = [
@@ -76,7 +83,7 @@ async function makeTiles() {
 }
 
 async function joinTiles() {
-	console.log('JOIN TILES');
+	console.log(chalk.red.bold('join tiles'));
 	const args = [
 		'--layer=' + layerName,
 		'--name=' + layerName,
@@ -89,7 +96,7 @@ async function joinTiles() {
 }
 
 async function makeVersaTiles() {
-	console.log('MAKE VERSATILES');
+	console.log(chalk.red.bold('convert to VersaTiles'));
 	const args = [
 		'convert',
 		'--compress=brotli',
