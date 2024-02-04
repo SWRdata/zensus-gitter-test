@@ -49,7 +49,13 @@ for (const file of files) {
 				line = line.split(separator);
 				data.addRow(
 					line[fields.cell],
-					[line[fields.propKey], line[fields.propVal]].map(v => v.replace(/[":\n\r\t ]+/g, '')).join(':'),
+					[
+						line[fields.propKey],
+						line[fields.propVal]
+					].map(v => v
+						.replace(/[^\wäöüß\-_]+/gi, ' ')
+						.trim()
+					).join(': '),
 					parseInt(line[fields.value], 10),
 				);
 			}
