@@ -6,12 +6,12 @@ import chalk from 'chalk';
 
 const filenameTemplate = 'temp/zensus2011_level%.geojsonl';
 const levelMapping = [
-	[9, 14],
+	[10, 13],
+	[9],
 	[8],
 	[7],
 	[6],
 	[5],
-	[4],
 ]
 const layerName = 'zensus';
 const fields = [
