@@ -11,17 +11,31 @@
 	<style>
 		body {
 			margin: 0;
+			position: relative;
+			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		}
 
 		#map {
-			width: 100vw;
+			width: calc(100vw - 200px);
 			height: 100vh;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		#sidebar {
+			width: 200px;
+			height: 100vh;
+			position: absolute;
+			top: 0;
+			right: 0;
 		}
 	</style>
 </head>
 
 <body>
 	<div id="map"></div>
+	<div id="sidebar">hallo</div>
 	<script>
 		(async () => {
 			const style = VersaTilesStyle.graybeard({
@@ -38,33 +52,73 @@
 			})
 			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011b.versatiles?style.json')).json();
 
-			const { fields } = styleOverlay.sources.vectorSource.vector_layers[0];
-			const key0 = 'INSGESAMT: Einheiten insgesamt';
-			const key1 = 'STAATSANGE_HLND: Türkei';
-			//const color0 = [0, 159, 227];
-			//const color1 = [227, 6, 19];
-			const color0 = [172, 207, 103];
-			const color1 = [60, 0, 183];
-			const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
-			const scale0 = 1;
-			const scale1 = 3;
-
-			// 1: multiply colors (subtractive color mixing)
-			// 0: overlay colors (paint color opaquely over the other color)
-			const multiply = 0;
-
-
 			style.sources.vectorSource = styleOverlay.sources.vectorSource
 
-			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
-			console.log(index);
-			style.layers.splice(index, 0, {
+			const visualisationLayer = {
 				id: 'visualisation',
 				'source-layer': 'zensus',
 				source: 'vectorSource',
 				type: 'fill',
 				filter: ['==', '$type', 'Polygon'],
-				paint: {
+				paint: { 'fill-color': 'transparent' }
+			}
+			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
+			style.layers.splice(index, 0, visualisationLayer);
+
+
+
+			const sidebar = document.getElementById('sidebar');
+			const fields = [
+				{ name: 'Staats.: Deutschland', key: 'STAATSANGE_HLND: Deutschland', scale: 1 },
+				{ name: 'Staats.: Polen', key: 'STAATSANGE_HLND: Polen', scale: 3 },
+				{ name: 'Staats.: Rumänien', key: 'STAATSANGE_HLND: Rumänien', scale: 3 },
+				{ name: 'Staats.: Türkei', key: 'STAATSANGE_HLND: Türkei', scale: 3 },
+				{ name: 'Staats.: Ukraine', key: 'STAATSANGE_HLND: Ukraine', scale: 3 },
+				{ name: 'Staats.: Sonstige', key: 'STAATSANGE_HLND: Sonstige', scale: 1 },
+				{ name: 'Staats.: EU27-Land', key: 'STAATSANGE_GRP: EU27-Land', scale: 1 },
+				{ name: 'Staats.: Sonstiges Europa', key: 'STAATSANGE_GRP: Sonstiges Europa', scale: 1 },
+				{ name: 'Staats.: Sonstige Welt', key: 'STAATSANGE_GRP: Sonstige Welt', scale: 1 },
+				{ name: 'Alter: Unter 18', key: 'ALTER_KURZ: Unter 18', scale: 1 },
+				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
+				{ name: 'Alter: 30 - 49', key: 'ALTER_KURZ: 30 - 49', scale: 1 },
+				{ name: 'Alter: 50 - 64', key: 'ALTER_KURZ: 50 - 64', scale: 1 },
+				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
+			]
+			fields.forEach(({ name, key, scale }, index) => {
+				const p = document.createElement('p');
+				sidebar.appendChild(p);
+
+				const input = document.createElement('input');
+				input.setAttribute('id', 'input' + index);
+				input.setAttribute('type', 'radio');
+				input.setAttribute('name', 'input');
+				if (index === 3) {
+					input.setAttribute('checked', 'checked');
+					setTimeout(() => setLayer(key, scale), 1000);
+				}
+				input.addEventListener('click', () => setLayer(key, scale));
+				p.appendChild(input);
+
+				const label = document.createElement('label');
+				label.setAttribute('for', 'input' + index);
+				label.innerText = ' ' + name;
+				p.appendChild(label);
+			})
+
+			function setLayer(key1, scale1) {
+				console.log(key1, scale1);
+				const key0 = 'INSGESAMT: Einheiten insgesamt';
+				//const color0 = [0, 159, 227];
+				//const color1 = [227, 6, 19];
+				const color0 = [172, 207, 103];
+				const color1 = [60, 0, 183];
+				const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
+				const scale0 = 1;
+
+				// 1: multiply colors (subtractive color mixing)
+				// 0: overlay colors (paint color opaquely over the other color)
+				const multiply = 0;
+				visualisationLayer.paint = {
 					'fill-color': [
 						'let',
 						'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5],
@@ -96,10 +150,9 @@
 					'fill-antialias': true,
 					'fill-outline-color': 'transparent'
 				}
-			});
+				map.setStyle(style, { diff: true });
+			}
 
-
-			console.log(style);
 
 			const mapOptions = {
 				container: 'map',
