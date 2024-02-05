@@ -11,7 +11,11 @@ import chalk from 'chalk';
 process.chdir(new URL('../', import.meta.url).pathname);
 
 let files = getFiles('data/zensus2011');
-files = ['data/zensus2011/zensus2011_bevoelkerung_100m.csv.br'];
+files = [
+	'data/zensus2011/zensus2011_bevoelkerung_100m.csv.br',
+	'data/zensus2011/zensus2011_gebaeude_100m.csv.br',
+	'data/zensus2011/zensus2011_wohnungen_100m.csv.br'
+];
 //files = ['data/zensus2011/extract.csv.br'];
 
 console.log(chalk.red.bold(`Reading ${files.length} files`));
