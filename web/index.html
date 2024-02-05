@@ -5,6 +5,7 @@
 	<meta charset="utf-8">
 	<title>VersaTiles</title>
 	<meta name="viewport" content="width=device-width">
+	<script src="./versatiles-style.js"></script>
 	<script src="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.js"></script>
 	<link href="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.css" rel="stylesheet">
 	<style>
@@ -23,75 +24,82 @@
 	<div id="map"></div>
 	<script>
 		(async () => {
-			const style = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011.versatiles?style.json')).json();
+			const style = VersaTilesStyle.graybeard({
+				tiles: ['https://tiles.datenhub.net/tiles/osm/{z}/{x}/{y}'],
+				sprite: 'https://static.datenhub.net/maps/styles/swr-bright/sprite',
+				glyphs: 'https://static.datenhub.net/maps/fonts/{fontstack}/{range}.pbf',
+				languageSuffix: '_de',
+				colors: { label: '#222' },
+				recolor: { gamma: 0.3 }
+			});
+			style.layers = style.layers.filter(layer => {
+				if (layer.id.startsWith('street-motorway')) return false;
+				return true;
+			})
+			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011b.versatiles?style.json')).json();
 
-			const { fields } = style.sources.vectorSource.vector_layers[0];
+			const { fields } = styleOverlay.sources.vectorSource.vector_layers[0];
 			const key0 = 'INSGESAMT: Einheiten insgesamt';
 			const key1 = 'STAATSANGE_HLND: Türkei';
-			const color0 = [0, 159, 227];
-			//const color0 = [255, 255, 255];
-			const color1 = [227, 6, 19];
-			//const color1 = [229, 0, 109];
+			//const color0 = [0, 159, 227];
+			//const color1 = [227, 6, 19];
+			const color0 = [172, 207, 103];
+			const color1 = [60, 0, 183];
 			const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
 			const scale0 = 1;
 			const scale1 = 3;
 
 			// 1: multiply colors (subtractive color mixing)
 			// 0: overlay colors (paint color opaquely over the other color)
-			const multiply = 0.3;
+			const multiply = 0;
 
-			console.log(style.layers);
-			console.log(colors);
 
-			style.layers = [
-				{
-					id: 'background',
-					type: 'background',
-					paint: {
-						'background-color': '#fff'
-					}
-				},
-				{
-					id: 'visualisation',
-					'source-layer': 'zensus',
-					source: 'vectorSource',
-					type: 'fill',
-					filter: ['==', '$type', 'Polygon'],
-					paint: {
-						'fill-color': [
+			style.sources.vectorSource = styleOverlay.sources.vectorSource
+
+			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
+			console.log(index);
+			style.layers.splice(index, 0, {
+				id: 'visualisation',
+				'source-layer': 'zensus',
+				source: 'vectorSource',
+				type: 'fill',
+				filter: ['==', '$type', 'Polygon'],
+				paint: {
+					'fill-color': [
+						'let',
+						'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5],
+						'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5],
+						[
 							'let',
-							'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5],
-							'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5],
+							'a', ['-', 1, ['*', ['var', 'v0'], ['var', 'v1']]],
 							[
-								'let',
-								'a', ['-', 1, ['*', ['var', 'v0'], ['var', 'v1']]],
-								[
-									'rgba',
-									...colors.map(([c0, c1]) =>
-										['match',
-											['var', 'a'],
-											0, 255,
-											['/',
-												['+',
-													['*', ['var', 'v0'], multiply * (c1 - c0 * c1 / 255)],
-													['*', ['var', 'v1'], multiply * (c0 - c0 * c1 / 255) + (1 - multiply) * (c0 - c1)],
-													['*', ['var', 'v0'], ['var', 'v1'], multiply * (c0 * c1 / 255 - c0 - c1) + (1 - multiply) * (- c0)],
-													multiply * (c0 * c1 / 255) + (1 - multiply) * c1
-												],
-												['var', 'a']
-											]
+								'rgba',
+								...colors.map(([c0, c1]) =>
+									['match',
+										['var', 'a'],
+										0, 255,
+										['/',
+											['+',
+												['*', ['var', 'v0'], multiply * (c1 - c0 * c1 / 255)],
+												['*', ['var', 'v1'], multiply * (c0 - c0 * c1 / 255) + (1 - multiply) * (c0 - c1)],
+												['*', ['var', 'v0'], ['var', 'v1'], multiply * (c0 * c1 / 255 - c0 - c1) + (1 - multiply) * (- c0)],
+												multiply * (c0 * c1 / 255) + (1 - multiply) * c1
+											],
+											['var', 'a']
 										]
-									),
-									['var', 'a']
-								]
+									]
+								),
+								['var', 'a']
 							]
-						],
-						'fill-antialias': true,
-						'fill-outline-color': 'transparent'
-					}
+						]
+					],
+					'fill-antialias': true,
+					'fill-outline-color': 'transparent'
 				}
-			]
+			});
 
+
+			console.log(style);
 
 			const mapOptions = {
 				container: 'map',
@@ -101,7 +109,7 @@
 				touchZoomRotate: false,
 			}
 
-			const source = Object.values(style.sources)[0];
+			const source = Object.values(styleOverlay.sources)[0];
 			if (source.bounds) mapOptions.bounds = source.bounds;
 
 			const map = new maplibregl.Map(mapOptions);
