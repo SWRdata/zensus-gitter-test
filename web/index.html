@@ -5,8 +5,8 @@
 	<meta charset="utf-8">
 	<title>VersaTiles</title>
 	<meta name="viewport" content="width=device-width">
-	<script src="/assets/maplibre/maplibre-gl.js"></script>
-	<link href="/assets/maplibre/maplibre-gl.css" rel="stylesheet">
+	<script src="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.js"></script>
+	<link href="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.css" rel="stylesheet">
 	<style>
 		body {
 			margin: 0;
@@ -23,7 +23,7 @@
 	<div id="map"></div>
 	<script>
 		(async () => {
-			const style = await (await fetch('tiles/style.json')).json();
+			const style = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011.versatiles?style.json')).json();
 
 			const { fields } = style.sources.vectorSource.vector_layers[0];
 			const key0 = 'INSGESAMT: Einheiten insgesamt';
