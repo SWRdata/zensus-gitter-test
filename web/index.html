@@ -6,7 +6,7 @@
 	<title>VersaTiles</title>
 	<meta name="viewport" content="width=device-width">
 	<script src="./versatiles-style.js"></script>
-	<script src="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.js"></script>
+	<script src="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl-dev.js"></script>
 	<link href="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.css" rel="stylesheet">
 	<style>
 		body {
@@ -47,9 +47,10 @@
 			});
 			style.layers = style.layers.filter(layer => {
 				if (layer.id.startsWith('street-motorway')) return false;
+				if (layer.id.startsWith('symbol-')) return false;
 				return true;
 			})
-			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011d.versatiles?style.json')).json();
+			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011e.versatiles?style.json')).json();
 
 			style.sources.vectorSource = styleOverlay.sources.vectorSource
 
@@ -61,6 +62,7 @@
 				filter: ['==', '$type', 'Polygon'],
 				paint: { 'fill-color': 'transparent' }
 			}
+			
 			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
 			style.layers.splice(index, 0, visualisationLayer);
 
@@ -71,7 +73,7 @@
 				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
 				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
 				{ name: 'Staats.: Türkei', key: 'STAATSANGE_HLND: Türkei', scale: 3 },
-				{ name: 'Staats.: EU27-Land', key: 'STAATSANGE_GRP: EU27-Land', scale: 1 },
+				{ name: 'Staats.: EU27-Land', key: 'STAATSANGE_GRP: EU27-Land', scale: 2 },
 				{ name: 'Staats.: Sonstiges Europa', key: 'STAATSANGE_GRP: Sonstiges Europa', scale: 1 },
 				{ name: 'Staats.: Sonstige Welt', key: 'STAATSANGE_GRP: Sonstige Welt', scale: 1 },
 				{ name: 'Heiztyp: Zentralheizung', key: 'HEIZTYP: Zentralheizung', scale: 1 },
