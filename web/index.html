@@ -50,7 +50,7 @@
 				if (layer.id.startsWith('street-motorway')) return false;
 				return true;
 			})
-			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011b.versatiles?style.json')).json();
+			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011d.versatiles?style.json')).json();
 
 			style.sources.vectorSource = styleOverlay.sources.vectorSource
 
@@ -68,23 +68,19 @@
 
 
 			const sidebar = document.getElementById('sidebar');
-			const fields = [
-				{ name: 'Staats.: Deutschland', key: 'STAATSANGE_HLND: Deutschland', scale: 1 },
-				{ name: 'Staats.: Polen', key: 'STAATSANGE_HLND: Polen', scale: 3 },
-				{ name: 'Staats.: Rumänien', key: 'STAATSANGE_HLND: Rumänien', scale: 3 },
+			[
+				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
+				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
 				{ name: 'Staats.: Türkei', key: 'STAATSANGE_HLND: Türkei', scale: 3 },
-				{ name: 'Staats.: Ukraine', key: 'STAATSANGE_HLND: Ukraine', scale: 3 },
-				{ name: 'Staats.: Sonstige', key: 'STAATSANGE_HLND: Sonstige', scale: 1 },
 				{ name: 'Staats.: EU27-Land', key: 'STAATSANGE_GRP: EU27-Land', scale: 1 },
 				{ name: 'Staats.: Sonstiges Europa', key: 'STAATSANGE_GRP: Sonstiges Europa', scale: 1 },
 				{ name: 'Staats.: Sonstige Welt', key: 'STAATSANGE_GRP: Sonstige Welt', scale: 1 },
-				{ name: 'Alter: Unter 18', key: 'ALTER_KURZ: Unter 18', scale: 1 },
-				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
-				{ name: 'Alter: 30 - 49', key: 'ALTER_KURZ: 30 - 49', scale: 1 },
-				{ name: 'Alter: 50 - 64', key: 'ALTER_KURZ: 50 - 64', scale: 1 },
-				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
-			]
-			fields.forEach(({ name, key, scale }, index) => {
+				{ name: 'Heiztyp: Zentralheizung', key: 'HEIZTYP: Zentralheizung', scale: 1 },
+				{ name: 'Heiztyp: Etagenheizung', key: 'HEIZTYP: Etagenheizung', scale: 1 },
+				{ name: 'Wohnung: vermietet', key: 'NUTZUNG_DETAIL_HHGEN: Vermietet mit aktuell geführtem Haushalt', scale: 1 },
+				{ name: 'Wohnung: Eigentum', key: 'NUTZUNG_DETAIL_HHGEN: Eigentum mit aktuell geführtem Haushalt', scale: 2 },
+				{ name: 'Wohneigentum: privat', key: 'WOHNEIGENTUM: Privatperson -en', scale: 1 },
+			].forEach(({ name, key, scale }, index) => {
 				const p = document.createElement('p');
 				sidebar.appendChild(p);
 
@@ -92,7 +88,7 @@
 				input.setAttribute('id', 'input' + index);
 				input.setAttribute('type', 'radio');
 				input.setAttribute('name', 'input');
-				if (index === 3) {
+				if (index === 0) {
 					input.setAttribute('checked', 'checked');
 					setTimeout(() => setLayer(key, scale), 1000);
 				}
@@ -106,10 +102,7 @@
 			})
 
 			function setLayer(key1, scale1) {
-				console.log(key1, scale1);
 				const key0 = 'INSGESAMT: Einheiten insgesamt';
-				//const color0 = [0, 159, 227];
-				//const color1 = [227, 6, 19];
 				const color0 = [172, 207, 103];
 				const color1 = [60, 0, 183];
 				const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
@@ -121,8 +114,8 @@
 				visualisationLayer.paint = {
 					'fill-color': [
 						'let',
-						'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['get', key0]]], -0.5],
-						'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['get', key1]]], -0.5],
+						'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['to-number', ['get', key0]]]], -0.5],
+						'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['to-number', ['get', key1]]]], -0.5],
 						[
 							'let',
 							'a', ['-', 1, ['*', ['var', 'v0'], ['var', 'v1']]],
