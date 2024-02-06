@@ -16,7 +16,7 @@
 		}
 
 		#map {
-			width: calc(100vw - 200px);
+			width: 100vw;
 			height: 100vh;
 			position: absolute;
 			top: 0;
@@ -24,18 +24,17 @@
 		}
 
 		#sidebar {
-			width: 200px;
-			height: 100vh;
-			position: absolute;
-			top: 0;
-			right: 0;
+			padding: 5px;
+		}
+
+		#sidebar label {
+			display: block;
 		}
 	</style>
 </head>
 
 <body>
 	<div id="map"></div>
-	<div id="sidebar">hallo</div>
 	<script>
 		(async () => {
 			const style = VersaTilesStyle.graybeard({
@@ -68,7 +67,7 @@
 
 
 			const sidebar = document.getElementById('sidebar');
-			[
+			const fields = [
 				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
 				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
 				{ name: 'Staats.: Türkei', key: 'STAATSANGE_HLND: Türkei', scale: 3 },
@@ -80,26 +79,7 @@
 				{ name: 'Wohnung: vermietet', key: 'NUTZUNG_DETAIL_HHGEN: Vermietet mit aktuell geführtem Haushalt', scale: 1 },
 				{ name: 'Wohnung: Eigentum', key: 'NUTZUNG_DETAIL_HHGEN: Eigentum mit aktuell geführtem Haushalt', scale: 2 },
 				{ name: 'Wohneigentum: privat', key: 'WOHNEIGENTUM: Privatperson -en', scale: 1 },
-			].forEach(({ name, key, scale }, index) => {
-				const p = document.createElement('p');
-				sidebar.appendChild(p);
-
-				const input = document.createElement('input');
-				input.setAttribute('id', 'input' + index);
-				input.setAttribute('type', 'radio');
-				input.setAttribute('name', 'input');
-				if (index === 0) {
-					input.setAttribute('checked', 'checked');
-					setTimeout(() => setLayer(key, scale), 1000);
-				}
-				input.addEventListener('click', () => setLayer(key, scale));
-				p.appendChild(input);
-
-				const label = document.createElement('label');
-				label.setAttribute('for', 'input' + index);
-				label.innerText = ' ' + name;
-				p.appendChild(label);
-			})
+			];
 
 			function setLayer(key1, scale1) {
 				const key0 = 'INSGESAMT: Einheiten insgesamt';
@@ -160,7 +140,45 @@
 
 			const map = new maplibregl.Map(mapOptions);
 
-			map.addControl(new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }));
+			map.addControl(
+				new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }),
+				'top-left',
+			);
+
+			class SidebarControl {
+				onAdd(map) {
+					this._map = map;
+					this._container = document.createElement('div');
+					this._container.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group');
+					this._container.id = 'sidebar';
+
+					fields.forEach(({ name, key, scale }, index) => {
+						const label = document.createElement('label');
+						label.setAttribute('for', 'input' + index);
+						label.innerText = ' ' + name;
+						this._container.appendChild(label);
+
+						const input = document.createElement('input');
+						input.setAttribute('id', 'input' + index);
+						input.setAttribute('type', 'radio');
+						input.setAttribute('name', 'input');
+						if (index === 0) {
+							input.setAttribute('checked', 'checked');
+							setTimeout(() => setLayer(key, scale), 1000);
+						}
+						input.addEventListener('click', () => setLayer(key, scale));
+						label.prepend(input);
+					})
+
+					return this._container;
+				}
+
+				onRemove() {
+					this._container.parentNode.removeChild(this._container);
+					this._map = undefined;
+				}
+			}
+			map.addControl(new SidebarControl());
 		})()
 	</script>
 </body>
