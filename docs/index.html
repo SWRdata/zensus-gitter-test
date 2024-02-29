@@ -43,7 +43,7 @@
 				glyphs: 'https://static.datenhub.net/maps/fonts/{fontstack}/{range}.pbf',
 				languageSuffix: '_de',
 				colors: { label: '#222' },
-				recolor: { gamma: 0.3 }
+				recolor: { gamma: 0.5 }
 			});
 			style.layers = style.layers.filter(layer => {
 				if (layer.id.startsWith('street-motorway')) return false;
@@ -62,7 +62,7 @@
 				filter: ['==', '$type', 'Polygon'],
 				paint: { 'fill-color': 'transparent' }
 			}
-			
+
 			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
 			style.layers.splice(index, 0, visualisationLayer);
 
@@ -85,7 +85,7 @@
 
 			function setLayer(key1, scale1) {
 				const key0 = 'INSGESAMT: Einheiten insgesamt';
-				const color0 = [172, 207, 103];
+				const color0 = [137, 207, 0];
 				const color1 = [60, 0, 183];
 				const colors = color0.map((c0, i) => [c0, color1[i]].map(v => v * 0.9998 + 0.0001));
 				const scale0 = 1;
@@ -96,7 +96,7 @@
 				visualisationLayer.paint = {
 					'fill-color': [
 						'let',
-						'v0', ['^', ['+', 1, ['*', 0.1 * scale0, ['to-number', ['get', key0]]]], -0.5],
+						'v0', ['+', 0.3, ['*', 0.7, ['^', ['+', 1, ['*', 0.1 * scale0, ['to-number', ['get', key0]]]], -0.5]]],
 						'v1', ['^', ['+', 1, ['*', 0.1 * scale1, ['to-number', ['get', key1]]]], -0.5],
 						[
 							'let',
