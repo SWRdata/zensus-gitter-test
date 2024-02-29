@@ -1,10 +1,11 @@
-import { run } from './lib/run.js';
-import { readFileSync } from 'node:fs';
-import chalk from 'chalk';
+// Import necessary modules and functions
+import { run } from './lib/run.js'; // Utility function to execute shell commands
+import { readFileSync } from 'node:fs'; // Node.js function to read files synchronously
+import chalk from 'chalk'; // Module for coloring console output
 
-
-
+// Template for the filenames of the GeoJSONL files
 const filenameTemplate = 'temp/zensus2011_level%.geojsonl';
+// Mapping of zoom levels to the corresponding files
 const levelMapping = [
 	[10, 13],
 	[9],
@@ -12,8 +13,9 @@ const levelMapping = [
 	[7],
 	[6],
 	[4, 5],
-]
-const layerName = 'zensus';
+];
+const layerName = 'zensus'; // Name of the layer for the vector tiles
+// Fields to be included in the vector tiles
 const fields = [
 	'INSGESAMT: Einheiten insgesamt',
 	//'STAATSANGE_HLND: Deutschland',
@@ -39,6 +41,7 @@ const fields = [
 
 
 
+// Execute the defined functions in sequence
 checkFields();
 await makeTiles();
 await joinTiles();
@@ -46,6 +49,7 @@ await makeVersaTiles();
 
 
 
+// Check the presence of specified fields in the last level's GeoJSONL file
 function checkFields() {
 	console.log(chalk.red.bold('check fields'));
 	const filename = filenameTemplate.replace('%', levelMapping.length - 1);
@@ -61,11 +65,12 @@ function checkFields() {
 		if (keys.has(field)) return;
 		console.log('field missing: ' + field);
 		error = true;
-	})
+	});
 
 	if (error) process.exit();
 }
 
+// Generate vector tiles for each specified zoom level range
 async function makeTiles() {
 	console.log(chalk.red.bold('generate tiles'));
 	for (const [index, levels] of levelMapping.entries()) {
@@ -90,6 +95,7 @@ async function makeTiles() {
 	}
 }
 
+// Join all generated tilesets into a single MBTiles file
 async function joinTiles() {
 	console.log(chalk.red.bold('join tiles'));
 	const args = [
@@ -103,6 +109,7 @@ async function joinTiles() {
 	await run('tile-join', args);
 }
 
+// Convert the final MBTiles file into VersaTiles format
 async function makeVersaTiles() {
 	console.log(chalk.red.bold('convert to VersaTiles'));
 	const args = [
@@ -113,8 +120,3 @@ async function makeVersaTiles() {
 	];
 	await run('versatiles', args);
 }
-
-
-
-
-
