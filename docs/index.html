@@ -2,13 +2,21 @@
 <html lang="en">
 
 <head>
+	<!-- Contains meta-information about the document -->
 	<meta charset="utf-8">
-	<title>VersaTiles</title>
+	<!-- Specifies the character encoding for the HTML document -->
+	<title>VersaTiles - Zensusgitter</title>
+	<!-- Sets the title of the document that appears in the browser tab -->
 	<meta name="viewport" content="width=device-width">
+	<!-- Ensures the site is optimized for mobile devices by controlling the viewport width -->
 	<script src="./versatiles-style.js"></script>
+	<!-- Links a JavaScript file for VersaTiles styling -->
 	<script src="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl-dev.js"></script>
+	<!-- Includes the MapLibre GL JS library for web mapping -->
 	<link href="https://static.datenhub.net/maps/libs/maplibre-gl/4.0.0/maplibre-gl.css" rel="stylesheet">
+	<!-- Links the MapLibre GL CSS for styling map components -->
 	<style>
+		/* Inline CSS to style the body, map, and sidebar elements */
 		body {
 			margin: 0;
 			position: relative;
@@ -34,9 +42,13 @@
 </head>
 
 <body>
+	<!-- Body of the document containing visible content -->
 	<div id="map"></div>
+	<!-- Placeholder for the map rendered by MapLibre GL JS -->
 	<script>
+		// An immediately invoked function expression (IIFE) that is async to use await for fetching data.
 		(async () => {
+			// Initializes a map style with a custom function, setting various properties like tiles, sprite, glyphs, etc.
 			const style = VersaTilesStyle.graybeard({
 				tiles: ['https://tiles.datenhub.net/tiles/osm/{z}/{x}/{y}'],
 				sprite: 'https://static.datenhub.net/maps/styles/swr-bright/sprite',
@@ -45,15 +57,21 @@
 				colors: { label: '#222' },
 				recolor: { gamma: 0.5 }
 			});
+
+			// Filters out certain layers from the style based on their id prefixes.
 			style.layers = style.layers.filter(layer => {
 				if (layer.id.startsWith('street-motorway')) return false;
 				if (layer.id.startsWith('symbol-')) return false;
 				return true;
-			})
+			});
+
+			// Fetches an additional style configuration from a URL and waits for it to load.
 			const styleOverlay = await (await fetch('https://static.datenhub.net/data/zensus-test/zensus2011e.versatiles?style.json')).json();
 
-			style.sources.vectorSource = styleOverlay.sources.vectorSource
+			// Merges the fetched style overlay's vector source into the main style's sources.
+			style.sources.vectorSource = styleOverlay.sources.vectorSource;
 
+			// Defines a new visualization layer for the map.
 			const visualisationLayer = {
 				id: 'visualisation',
 				'source-layer': 'zensus',
@@ -61,15 +79,15 @@
 				type: 'fill',
 				filter: ['==', '$type', 'Polygon'],
 				paint: { 'fill-color': 'transparent' }
-			}
+			};
 
+			// Finds the index of a layer by its id prefix and inserts the visualization layer at that position.
 			const index = style.layers.findIndex(layer => layer.id.startsWith('label-place-'));
 			style.layers.splice(index, 0, visualisationLayer);
 
-
-
-			const sidebar = document.getElementById('sidebar');
+			// Setup for dynamic interaction through a sidebar.
 			const fields = [
+				// Defines various fields with names, keys, and scales for interactive filtering on the map.
 				{ name: 'Alter: 18 - 29', key: 'ALTER_KURZ: 18 - 29', scale: 1 },
 				{ name: 'Alter: 65 und älter', key: 'ALTER_KURZ: 65 und älter', scale: 0.5 },
 				{ name: 'Staats.: Türkei', key: 'STAATSANGE_HLND: Türkei', scale: 3 },
@@ -83,6 +101,7 @@
 				{ name: 'Wohneigentum: privat', key: 'WOHNEIGENTUM: Privatperson -en', scale: 1 },
 			];
 
+			// Function to dynamically set the layer based on key and scale. It adjusts the visual representation on the map.
 			function setLayer(key1, scale1) {
 				const key0 = 'INSGESAMT: Einheiten insgesamt';
 				const color0 = [137, 207, 0];
@@ -128,25 +147,26 @@
 				map.setStyle(style, { diff: true });
 			}
 
-
+			// Defines options for initializing the map.
 			const mapOptions = {
-				container: 'map',
-				style,
-				hash: true,
-				dragRotate: false,
-				touchZoomRotate: false,
-			}
+				container: 'map', // Specifies the DOM element ID to render the map in.
+				style, // The map style configuration.
+				hash: true, // Enables syncing map state with the URL hash.
+				dragRotate: false, // Disables the map rotation feature.
+				touchZoomRotate: false, // Disables the zoom and rotate features for touch devices.
+			};
 
+			// Adjusts map options based on the fetched style overlay's properties.
 			const source = Object.values(styleOverlay.sources)[0];
 			if (source.bounds) mapOptions.bounds = source.bounds;
 
+			// Initializes the map with the specified options.
 			const map = new maplibregl.Map(mapOptions);
 
-			map.addControl(
-				new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }),
-				'top-left',
-			);
+			// Adds navigation controls to the map.
+			map.addControl(new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-left');
 
+			// Defines a custom control to be added to the map, facilitating sidebar interactions.
 			class SidebarControl {
 				onAdd(map) {
 					this._map = map;
@@ -176,12 +196,15 @@
 				}
 
 				onRemove() {
+					// Allows for clean removal of the sidebar from the map.
 					this._container.parentNode.removeChild(this._container);
 					this._map = undefined;
 				}
 			}
+
+			// Adds the custom SidebarControl to the map for interactive filtering.
 			map.addControl(new SidebarControl());
-		})()
+		})();
 	</script>
 </body>
 
