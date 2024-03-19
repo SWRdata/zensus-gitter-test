@@ -28,7 +28,7 @@ npm run start
    Die richtigen CSV-Dateien erkennt man daran, dass u.a. die folgenden Spalten definiert sein müssen: `Gitter_ID_100m`, `Merkmal`, `Auspraegung_Text` und `Anzahl`
 2. Komprimieren Sie die CSV-Dateien mit Brotli und speichern Sie sie im Verzeichnis `/data/`.
    Aktuell sind folgende Dateinamen in `src/1_process_zensus2011.js` konfiguriert:
-	- `data/zensus2011/zensus2011_bevoelkerung_100m.csv.br`
+	- `data/zensus2011/zensus2011_demographie_100m.csv.br`
 	- `data/zensus2011/zensus2011_gebaeude_100m.csv.br`
 	- `data/zensus2011/zensus2011_wohnungen_100m.csv.br`
 

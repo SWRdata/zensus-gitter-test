@@ -14,7 +14,7 @@ process.chdir(new URL('../', import.meta.url).pathname);
 // Retrieve file paths for processing, hardcoding specific files for inclusion
 let files = getFiles('data/zensus2011');
 files = [
-	'data/zensus2011/zensus2011_bevoelkerung_100m.csv.br',
+	'data/zensus2011/zensus2011_demographie_100m.csv.br',
 	'data/zensus2011/zensus2011_gebaeude_100m.csv.br',
 	'data/zensus2011/zensus2011_wohnungen_100m.csv.br'
 ];
