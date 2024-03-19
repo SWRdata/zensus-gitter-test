@@ -59,7 +59,7 @@ for (const file of files) {
 				};
 				if (Object.values(fields).some(field => field == null)) {
 					console.log(line);
-					throw Error();
+					throw Error('Some of the columns are missing. Expected columns "Gitter_ID_100m", "Merkmal", "Auspraegung_Text" and "Anzahl"');
 				}
 			} else {
 				// For subsequent lines, extract data using the field indices and add it to the database

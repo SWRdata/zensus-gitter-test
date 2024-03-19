@@ -24,7 +24,8 @@ npm run start
 
 ### Daten herunterladen
 
-1. Laden Sie die gitterzellenbasierten Ergebnisse des Zensus 2011 von der [offiziellen Website des Zensus 2022](https://www.zensus2022.de/DE/Was-ist-der-Zensus/gitterzellenbasierte_Ergebnisse_Zensus2011.html) herunter.
+1. Laden Sie die gitterzellenbasierten Ergebnisse des Zensus 2011 von der [offiziellen Website des Zensus 2022](https://www.zensus2022.de/DE/Was-ist-der-Zensus/gitterzellenbasierte_Ergebnisse_Zensus2011.html) herunter.  
+   Die richtigen CSV-Dateien erkennt man daran, dass u.a. die folgenden Spalten definiert sein müssen: `Gitter_ID_100m`, `Merkmal`, `Auspraegung_Text` und `Anzahl`
 2. Komprimieren Sie die CSV-Dateien mit Brotli und speichern Sie sie im Verzeichnis `/data/`.
    Aktuell sind folgende Dateinamen in `src/1_process_zensus2011.js` konfiguriert:
 	- `data/zensus2011/zensus2011_bevoelkerung_100m.csv.br`
