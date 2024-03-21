@@ -7,12 +7,12 @@ import chalk from 'chalk'; // Module for coloring console output
 const filenameTemplate = 'temp/zensus2011_level%.geojsonl';
 // Mapping of zoom levels to the corresponding files
 const levelMapping = [
-	[10, 13],
-	[9],
-	[8],
-	[7],
-	[6],
-	[4, 5],
+	[10, 13], //  100m resolution
+	[9],      //  200m resolution
+	[8],      //  400m resolution
+	[7],      //  800m resolution
+	[6],      // 1600m resolution
+	[4, 5],   // 3200m resolution
 ];
 const layerName = 'zensus'; // Name of the layer for the vector tiles
 // Fields to be included in the vector tiles
